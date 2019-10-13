@@ -1,0 +1,19 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/user_center
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.jdbc.Driver
+  cloud:
+    nacos:
+      discovery:
+        #指定 nacos server 的地址  ，地址不要加 http
+        server-addr: localhost:8848
+        cluster-name: NJ
+  application:
+    #服务名称尽量用 - ，不要用_ ,更不要用特殊字符
+    name: user-center
+
