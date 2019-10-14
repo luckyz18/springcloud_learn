@@ -4,6 +4,7 @@ import com.itmuch.contentcenter.dao.content.ShareMapper;
 import com.itmuch.contentcenter.domain.dto.content.ShareDto;
 import com.itmuch.contentcenter.domain.dto.user.UserDto;
 import com.itmuch.contentcenter.domain.entity.content.Share;
+import com.itmuch.contentcenter.feignclient.UserCenterFeignClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,8 @@ public class ShareService {
     private RestTemplate restTemplate;
     @Autowired
     private DiscoveryClient discoveryClient;
+    @Autowired
+    private UserCenterFeignClient userCenterFeignClient;
 
     public ShareDto findById(Integer id) {
         Share share = shareMapper.selectByPrimaryKey(id);
@@ -46,8 +49,17 @@ public class ShareService {
         log.info(targetURL);
         UserDto userDto = this.restTemplate.getForObject(targetURL, UserDto.class, userId);
 */
+/*
 
+        //下面改造，不用restTemplate， 用Feign请求
+        缺点：   1. 代码不可读
+                2. 复杂的URL 难以维护
+                3. 难以响应需求的变化，变化很没有幸福感
+                4. 编程体验不统一
         UserDto userDto = this.restTemplate.getForObject("http://user-center/users/{userId}", UserDto.class, userId);
+*/
+        UserDto userDto  = this.userCenterFeignClient.findById(userId);
+
 
         ShareDto shareDto = new ShareDto();
         //消息装配
