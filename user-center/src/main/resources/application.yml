@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8080
 
 spring:
   datasource:
@@ -10,9 +10,12 @@ spring:
   cloud:
     nacos:
       discovery:
+#        namespace: 74f2efa5-1e9e-4046-b77d-77b5c8a17356
         #指定 nacos server 的地址  ，地址不要加 http
         server-addr: localhost:8848
-        cluster-name: NJ
+        cluster-name: BJ
+        metadata:
+          version: v1
   application:
     #服务名称尽量用 - ，不要用_ ,更不要用特殊字符
     name: user-center
