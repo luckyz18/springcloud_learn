@@ -46,4 +46,3 @@ feign:
       user-center:
         loggerLevel: full
 #  配置文件配置feign的日志级别- 全局配置，把 user-center改为 default
-
