@@ -13,5 +13,4 @@ import ribbonConfiguration.RibbonConfiguration;
 @RibbonClients(defaultConfiguration = RibbonConfiguration.class)
 public class UserCenterConfiguration {
 
-
 }

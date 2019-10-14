@@ -1,5 +1,6 @@
 package ribbonConfiguration;
 
+import com.itmuch.contentcenter.configuration.NacosFinalRule;
 import com.itmuch.contentcenter.configuration.NacosSameClusterWeightedRule;
 import com.itmuch.contentcenter.configuration.NacosWeightedRule;
 import com.netflix.loadbalancer.IPing;
@@ -16,7 +17,8 @@ public class RibbonConfiguration {
     public IRule ribbonRule(){
         //return new RandomRule();
         //return new NacosWeightedRule();
-        return new NacosSameClusterWeightedRule();
+        //return new NacosSameClusterWeightedRule();
+        return new NacosFinalRule();
     }
 
     /*@Bean
