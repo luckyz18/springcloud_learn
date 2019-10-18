@@ -1,9 +1,13 @@
 package com.itmuch.contentcenter.controller;
 
+import com.itmuch.contentcenter.domain.dto.user.UserDto;
+import com.itmuch.contentcenter.feignclient.TestBaiduFeignClient;
+import com.itmuch.contentcenter.feignclient.UserCenterFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -40,4 +44,17 @@ public class TestController {
         List<ServiceInstance> instances = discoveryClient.getInstances("user-center");
         return instances;
     }
+
+    @Autowired
+    TestBaiduFeignClient baiduFeignClient;
+    @GetMapping("/baidutest")
+    public String testBaidu(){
+        return baiduFeignClient.index();
+    }
+
+
+
+
+
+
 }
