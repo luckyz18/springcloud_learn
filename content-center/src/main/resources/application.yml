@@ -18,6 +18,17 @@ spring:
         metadata:
           version: v1
           target-version: v1
+    #为内容中心添加sentinel控制台
+
+    sentinel:
+#      连接在线的阿里云 sentinel 控制台，因为此时连接的是在线的控制台  所以注释掉
+      transport:
+        #指定 sentinel控制台的地址
+        dashboard: localhost:8080
+#      关闭掉对spring mvc 端点的保护
+#      filter:
+#        enabled: false
+
   application:
     name: content-center
 
@@ -40,6 +51,9 @@ logging:
 
 #配置文件配置feign的日志级别- 局部配置
 feign:
+  sentinel:
+    #为 feign整合sentinel
+    enabled: true
   client:
     config:
       #微服务名称
@@ -48,12 +62,23 @@ feign:
         loggerLevel: full
   # feign原来是用 httpUrlConnection 连接的，但是这种方式没有连接池，所以启用 有连接池的 apache 的 httpclient 或者 okhttp 来请求
   # 让feign启用okhttp作为发送http请求的客户端
-  okhttp:
-    enabled: true
+#  okhttp:
+#    enabled: true
   httpclient:
     # 让feign启用httpclient作为发送http请求的客户端
-#    enabled: true
+    enabled: true
     # feign的最大连接数
     max-connections: 200
     # feign 单个路径的最大连接数
     max-connections-per-route: 50
+#资源监控  把actuator 中的默认隐藏的 sentinel 暴露出来
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+#添加 ahas 启动参数 用于连接在线的sentinel 控制台
+#ahas.namespace: default
+#project.name: content-center
+#ahas.license: b5968f7ef3b64d858c1f599a700ba26f
