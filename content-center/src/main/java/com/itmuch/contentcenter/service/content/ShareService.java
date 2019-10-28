@@ -1,6 +1,7 @@
 package com.itmuch.contentcenter.service.content;
 
 import com.itmuch.contentcenter.dao.content.ShareMapper;
+import com.itmuch.contentcenter.domain.dto.content.ShareAuditDto;
 import com.itmuch.contentcenter.domain.dto.content.ShareDto;
 import com.itmuch.contentcenter.domain.dto.user.UserDto;
 import com.itmuch.contentcenter.domain.entity.content.Share;
@@ -17,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Resource;
 import javax.sound.sampled.Line;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -68,5 +70,24 @@ public class ShareService {
         return shareDto;
     }
 
+    /*管理员审核*/
+    public Share auditById(Integer id, ShareAuditDto auditDto) {
+        //1. 查看该分享是否存在 && 状态是否是待审核状态
+        Share share = shareMapper.selectByPrimaryKey(id);
+        if (share == null){
+            new IllegalArgumentException("参数非法，分享内容不存在");
+        }
+        if (Objects.equals("NOT_YET",share.getAuditStatus())){
+            new IllegalArgumentException("参数非法，不是待审核状态");
+        }
 
+        //2. 审核资源 更新审核状态
+        share.setAuditStatus(auditDto.getAuditStatusEnum().toString());
+        shareMapper.updateByPrimaryKey(share);
+
+        //如果是pass 为发布人添加积分
+        //假设这个方法飞创耗时  那么优化一下  变成异步请求，提升用户体验
+        //userCenterFeignClient.addBonus(uid,500);
+        return share;
+    }
 }

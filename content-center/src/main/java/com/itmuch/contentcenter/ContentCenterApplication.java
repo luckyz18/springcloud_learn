@@ -16,6 +16,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 @EnableFeignClients
 //feign全局配置  UserCenterFeignClien 可以改名为 GlobalFeignClient
 //@EnableFeignClients(defaultConfiguration = UserCenterFeignClient.class)
+@SpringBootApplication
 public class ContentCenterApplication {
 
     public static void main(String[] args) {
