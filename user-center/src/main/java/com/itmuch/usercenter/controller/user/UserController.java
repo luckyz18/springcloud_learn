@@ -19,4 +19,10 @@ public class UserController {
     public User findById(@PathVariable Integer id) {
         return userService.findById(id);
     }
+
+    @GetMapping("/q")
+    public User query(User user){
+        return user;
+    }
+
 }

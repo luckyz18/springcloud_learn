@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
   datasource:
@@ -19,4 +19,8 @@ spring:
   application:
     #服务名称尽量用 - ，不要用_ ,更不要用特殊字符
     name: user-center
+
+rocketmq:
+  name-server: 127.0.0.1:9876
+  #消费组的名称不在这里写
 
