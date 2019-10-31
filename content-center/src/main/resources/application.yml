@@ -82,3 +82,12 @@ management:
 #ahas.namespace: default
 #project.name: content-center
 #ahas.license: b5968f7ef3b64d858c1f599a700ba26f
+
+
+# rocketmq 相关配置
+rocketmq:
+  #相当于服务发现组件 作用：生产者、消费者去找到主题和broker ip 对应
+  name-server: 127.0.0.1:9876
+  producer:
+    # 小坑 不填就会报错 是个必填参数
+    group: test-group
