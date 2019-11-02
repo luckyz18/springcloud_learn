@@ -16,11 +16,30 @@ spring:
         cluster-name: BJ
         metadata:
           version: v1
+    stream:
+      rocketmq:
+        binder:
+          name-server: 127.0.0.1:9876
+      bindings:
+        input:
+          #这里的 destination 要和生产者那里保持一致
+          destination: add-bonus-2
+          # 如果是rockemq 这里一定要设置
+          # 如果是其他的 mq 这里可以不用设置 group
+          group: binder-group
+
   application:
     #服务名称尽量用 - ，不要用_ ,更不要用特殊字符
     name: user-center
 
-rocketmq:
-  name-server: 127.0.0.1:9876
+# 先注释掉  用 stream
+#rocketmq:
+#  name-server: 127.0.0.1:9876
   #消费组的名称不在这里写
+
+logging:
+  level:
+    # 后台一直打印消息  把stream日志级别设置一下
+    com.alibaba.nacos: error
+
 
