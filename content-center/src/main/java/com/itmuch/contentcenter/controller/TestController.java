@@ -8,6 +8,7 @@ import com.alibaba.csp.sentinel.context.ContextUtil;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.itmuch.contentcenter.domain.dto.user.UserDto;
 import com.itmuch.contentcenter.feignclient.TestBaiduFeignClient;
+import com.itmuch.contentcenter.rocketmq.MySource;
 import com.itmuch.contentcenter.sentineltest.TestControllerBlockHandler;
 import com.itmuch.contentcenter.service.content.TestService;
 import io.netty.util.internal.StringUtil;
@@ -16,6 +17,8 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.stream.messaging.Source;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -159,6 +162,31 @@ public class TestController {
         // 调用user-center服务的接口（此时user-center即为服务提供者）
         return restTemplate.getForObject(
                 "http://user-center/users/{userId}", UserDto.class, userId);
+    }
+
+    //stream生产消息
+    @Autowired
+    private  Source source;
+    @GetMapping("test-stream")
+    public String testStream(){
+        this.source.output().send(
+                MessageBuilder.withPayload(
+                        "我是消息体"
+                ).build()
+        );
+        return "success";
+    }
+
+    @Autowired
+    private MySource mySource;
+    @GetMapping("test-stream2")
+    public String testStream2(){
+        this.mySource.output().send(
+                MessageBuilder.withPayload(
+                        "消息体aaa"
+                ).build()
+        );
+        return "success";
     }
 
 

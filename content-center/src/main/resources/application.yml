@@ -25,9 +25,31 @@ spring:
       transport:
         #指定 sentinel控制台的地址
         dashboard: localhost:8080
-#      关闭掉对spring mvc 端点的保护
+      #      关闭掉对spring mvc 端点的保护
 #      filter:
 #        enabled: false
+
+    stream:
+      rocketmq:
+        binder:
+          name-server: 127.0.0.1:9876
+        #stream 整合rmq; 需要配置 txProducerGroup，在配置文件配置
+        # 注意是stream - rocketmq -binding ,不是 stream-binding
+        bindings:
+          #指定 channel （output）,要和 stream.bindings (output) 相一致
+          output:
+            producer:
+              transactional: true  #表明是事务消息
+              group: tx-add-bonus-group
+
+      bindings:
+        output:
+          #destination 指定 topic
+          destination: add-bonus-2
+        my-output:
+          destination: stream-my-topic
+
+
 
   application:
     name: content-center
@@ -48,6 +70,8 @@ ribbon:
 logging:
   level:
     com.itmuch.contentcenter.feignclient.UserCenterFeignClient: debug
+    # 后台一直打印消息  把stream日志级别设置一下
+    com.alibaba.nacos: error
 
 #配置文件配置feign的日志级别- 局部配置
 feign:
@@ -85,9 +109,17 @@ management:
 
 
 # rocketmq 相关配置
-rocketmq:
-  #相当于服务发现组件 作用：生产者、消费者去找到主题和broker ip 对应
-  name-server: 127.0.0.1:9876
-  producer:
-    # 小坑 不填就会报错 是个必填参数
-    group: test-group
+# 这个是 spring 消息编程模型整合 rmq 的配置  ++++++++++++++ 之后用stream 整合 rmq实现分布式事务
+# 用stream 先注释掉
+#rocketmq:
+#  #相当于服务发现组件 作用：生产者、消费者去找到主题和broker ip 对应
+#  name-server: 127.0.0.1:9876
+#  producer:
+#    # 小坑 不填就会报错 是个必填参数
+#    group: test-group
+
+
+
+
+
+#start mqbroker.cmd -n 127.0.0.1:9876 autoCreateTopicEnable=true

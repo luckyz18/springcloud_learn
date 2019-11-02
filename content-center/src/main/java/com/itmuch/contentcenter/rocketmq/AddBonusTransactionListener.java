@@ -1,5 +1,7 @@
 package com.itmuch.contentcenter.rocketmq;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.itmuch.contentcenter.dao.content.RocketmqTransactionLogMapper;
 import com.itmuch.contentcenter.domain.dto.content.ShareAuditDto;
 import com.itmuch.contentcenter.domain.entity.content.RocketmqTransactionLog;
@@ -47,8 +49,15 @@ public class AddBonusTransactionListener implements RocketMQLocalTransactionList
             MessageHeaders headers = message.getHeaders();
             Integer shareId = Integer.valueOf(headers.get("share_id").toString());
             String tranctionId = headers.get(RocketMQHeaders.TRANSACTION_ID).toString();
+
+            //stream rmq 来获取 auditDto  args ==null
+            //小坑： 这里获取的是 String类型的，没办法转换成对象 所以传参的时候 用jsonString 在这里在解析成对象
+            String auditDtoString = (String)headers.get("dto");
+            ShareAuditDto auditDto = JSON.parseObject(auditDtoString,ShareAuditDto.class);
+            shareService.auditByIdWithTransactionLog(shareId, auditDto, tranctionId);
+
             // 执行带有事务注解的方法
-            shareService.auditByIdWithTransactionLog(shareId, (ShareAuditDto) args, tranctionId);
+            //shareService.auditByIdWithTransactionLog(shareId, (ShareAuditDto) args, tranctionId);
             // 正常执行，向MQ Server发送commit消息
             return RocketMQLocalTransactionState.COMMIT;
         } catch (NumberFormatException e) {

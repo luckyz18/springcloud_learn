@@ -1,5 +1,6 @@
 package com.itmuch.contentcenter.service.content;
 
+import com.alibaba.fastjson.JSON;
 import com.itmuch.contentcenter.dao.content.RocketmqTransactionLogMapper;
 import com.itmuch.contentcenter.dao.content.ShareMapper;
 import com.itmuch.contentcenter.domain.dto.content.ShareAuditDto;
@@ -16,6 +17,7 @@ import org.apache.rocketmq.spring.support.RocketMQHeaders;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +45,9 @@ public class ShareService {
 
     @Autowired
     RocketmqTransactionLogMapper rocketmqTransactionLogMapper;
+
+    @Autowired
+    Source source;
 
 
     public ShareDto findById(Integer id) {
@@ -82,7 +87,7 @@ public class ShareService {
     }
 
     /*管理员审核*/
-    //用 rmq 的 分布式事务去实现
+    //用 rmq 的 分布式事务去实现  -- 是用spring 的消息编程模型实现分布式事务
     public Share auditById(Integer id, ShareAuditDto auditDto) {
         //1. 查看该分享是否存在 && 状态是否是待审核状态
         Share share = shareMapper.selectByPrimaryKey(id);
@@ -113,7 +118,10 @@ public class ShareService {
         // 1. 发送半消息
         if (AuditStatusEnum.PASS.equals(auditDto.getAuditStatusEnum())) {
             String transactionID = UUID.randomUUID().toString();
-            this.rocketMQTemplate.sendMessageInTransaction(
+            /**
+             * 1.1 这里是spring 的编程模型+ rmq实现分布式事物的
+             */
+            /*this.rocketMQTemplate.sendMessageInTransaction(
                     "tx-add-bonus-group",
                     "add-bonus",
                     MessageBuilder.withPayload(
@@ -129,6 +137,25 @@ public class ShareService {
 
                     // 这里的 arg 有大用处  在本地事务处理 executeLocalTransaction  那里，-- 可以传参
                     auditDto
+            );*/
+
+            /**
+             * 1.2 这里是 spring-cloud-stream + rmq 实现分布式事务
+             */
+            this.source.output().send(
+                    MessageBuilder.withPayload(
+                            UserAddBonusMsgDto.builder()
+                                    .uid(share.getUserId())
+                                    .bonus(60)
+                                    .build()
+                    )
+                            //header 有大用处  -- 可以传参
+                            .setHeader(RocketMQHeaders.TRANSACTION_ID, transactionID)
+                            .setHeader("share_id", id)
+                            // 用header 来传 auditDTO  后面有个小坑--参数是String 类型的 而不是对象类型
+                            //.setHeader("dto",auditDto)
+                            .setHeader("dto", JSON.toJSONString(auditDto))
+                            .build()
             );
 
         } else {
