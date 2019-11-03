@@ -39,7 +39,6 @@ spring:
 
 logging:
   level:
-    # 后台一直打印消息  把stream日志级别设置一下
     com.alibaba.nacos: error
 
 
