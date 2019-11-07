@@ -48,6 +48,12 @@ public class UserService {
         log.info("积分添加完毕...");
     }
 
+    /**
+     * 用户登录
+     * @param loginDTO
+     * @param openid
+     * @return
+     */
     public User login(UserLoginDTO loginDTO, String openid) {
         User user = this.userMapper.selectOne(
                 User.builder()
