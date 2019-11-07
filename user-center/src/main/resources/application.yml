@@ -41,4 +41,11 @@ logging:
   level:
     com.alibaba.nacos: error
 
+#jwt 加密配置 若默认配置不符合需求 可以在配置文件中进行自定义
+jwt:
+  # 秘钥
+  secret: 5d1IB9SiWd5tjBx&EMi^031CtigL!6jJ
+  # jwt有效期，单位秒
+  expire-time-in-second: 1209600
+
 

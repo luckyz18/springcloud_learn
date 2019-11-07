@@ -3,6 +3,7 @@ package com.itmuch.usercenter.service.user;
 import com.itmuch.usercenter.dao.user.BonusEventLogMapper;
 import com.itmuch.usercenter.dao.user.UserMapper;
 import com.itmuch.usercenter.domain.dto.messages.UserAddBonusMsgDto;
+import com.itmuch.usercenter.domain.dto.user.UserLoginDTO;
 import com.itmuch.usercenter.domain.entity.user.BonusEventLog;
 import com.itmuch.usercenter.domain.entity.user.User;
 import lombok.extern.slf4j.Slf4j;
@@ -21,14 +22,14 @@ public class UserService {
     @Resource
     private BonusEventLogMapper bonusEventLogMapper;
 
-    public User findById(Integer id){
+    public User findById(Integer id) {
         User user = userMapper.selectByPrimaryKey(id);
         return user;
     }
 
     //为用户添加积分
     @Transactional(rollbackFor = Exception.class)
-    public void addBonus(UserAddBonusMsgDto msgDto){
+    public void addBonus(UserAddBonusMsgDto msgDto) {
         // 为用户加积分
         User user = userMapper.selectByPrimaryKey(msgDto.getUid());
         Integer bonus = msgDto.getBonus();
@@ -47,4 +48,26 @@ public class UserService {
         log.info("积分添加完毕...");
     }
 
+    public User login(UserLoginDTO loginDTO, String openid) {
+        User user = this.userMapper.selectOne(
+                User.builder()
+                        .wxId(openid)
+                        .build()
+        );
+        if (user == null) {
+            User userToSave = User.builder()
+                    .wxId(openid)
+                    .bonus(300)
+                    .wxNickname(loginDTO.getWxNickname())
+                    .avatarUrl(loginDTO.getAvatarUrl())
+                    .createTime(new Date())
+                    .updateTime(new Date())
+                    .roles("user")
+                    .build();
+
+            this.userMapper.insertSelective(userToSave);
+            return userToSave;
+        }
+        return user;
+    }
 }
