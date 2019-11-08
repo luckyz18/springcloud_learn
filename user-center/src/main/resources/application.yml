@@ -23,7 +23,7 @@ spring:
       bindings:
         input:
           #这里的 destination 要和生产者那里保持一致
-          destination: add-bonus-2
+          destination: add-bonus-yaya
           # 如果是rockemq 这里一定要设置
           # 如果是其他的 mq 这里可以不用设置 group
           group: binder-group
