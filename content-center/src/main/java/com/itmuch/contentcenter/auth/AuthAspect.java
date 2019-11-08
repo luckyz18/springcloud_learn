@@ -52,8 +52,8 @@ public class AuthAspect {
             request.setAttribute("id", claims.get("id"));
             request.setAttribute("wxNickname", claims.get("wxNickname"));
             request.setAttribute("roles", claims.get("roles"));
-        } catch (Throwable throwable ) {
-            throw new SecuException("token 错误 用户不允许访问 SecuException");
+        } catch (Throwable throwable) {
+            throw new SecuException("token 错误 lallala");
         }
     }
 
