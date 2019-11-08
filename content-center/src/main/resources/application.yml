@@ -45,9 +45,9 @@ spring:
       bindings:
         output:
           #destination 指定 topic
-          destination: add-bonus-2
-        my-output:
-          destination: stream-my-topic
+          destination: add-bonus-yaya
+#        my-output:
+#          destination: stream-my-topic
 
 
 
@@ -82,8 +82,13 @@ feign:
     config:
       #微服务名称
       # 如果改为全局配置的话，把 user-center改为 default
-      user-center:
+#      user-center:
+      default:
         loggerLevel: full
+        #feign token 传递的拦截器  feign的配置 1.用config 2.配置文件 ; 这里在配置文件中设置
+        requestInterceptors:
+          - com.itmuch.contentcenter.feignclient.intercepter.TokenRelayRequestIntercepter
+
   # feign原来是用 httpUrlConnection 连接的，但是这种方式没有连接池，所以启用 有连接池的 apache 的 httpclient 或者 okhttp 来请求
   # 让feign启用okhttp作为发送http请求的客户端
 #  okhttp:
@@ -95,6 +100,7 @@ feign:
     max-connections: 200
     # feign 单个路径的最大连接数
     max-connections-per-route: 50
+
 #资源监控  把actuator 中的默认隐藏的 sentinel 暴露出来
 management:
   endpoints:

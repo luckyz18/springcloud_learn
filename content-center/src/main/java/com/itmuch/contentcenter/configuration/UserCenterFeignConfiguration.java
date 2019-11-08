@@ -1,6 +1,8 @@
 package com.itmuch.contentcenter.configuration;
 
+import com.itmuch.contentcenter.feignclient.intercepter.TokenRelayRequestIntercepter;
 import feign.Logger;
+import feign.RequestInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,5 +14,12 @@ public class UserCenterFeignConfiguration {
     public Logger.Level level(){
         // feign 打印所有日志
         return Logger.Level.FULL;
+    }
+
+    //这是配置config的方式  配置feign 的 RequestInterceptor
+    // 还可以用配置文件的方式
+    @Bean
+    public RequestInterceptor requestInterceptor(){
+        return new TokenRelayRequestIntercepter();
     }
 }

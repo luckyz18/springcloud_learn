@@ -94,7 +94,7 @@ public class ShareService {
         if (share == null) {
             new IllegalArgumentException("参数非法，分享内容不存在");
         }
-        if (Objects.equals("NOT_YET", share.getAuditStatus())) {
+        if (!Objects.equals("NOT_YET", share.getAuditStatus())) {
             new IllegalArgumentException("参数非法，不是待审核状态");
         }
 

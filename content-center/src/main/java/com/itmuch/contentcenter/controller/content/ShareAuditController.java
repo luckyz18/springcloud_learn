@@ -1,5 +1,6 @@
 package com.itmuch.contentcenter.controller.content;
 
+import com.itmuch.contentcenter.auth.CheckAuthorization;
 import com.itmuch.contentcenter.domain.dto.content.ShareAuditDto;
 import com.itmuch.contentcenter.domain.entity.content.Share;
 import com.itmuch.contentcenter.service.content.ShareService;
@@ -18,9 +19,9 @@ public class ShareAuditController {
     private ShareService shareService;
 
     @PostMapping("/audit/{id}")
+    @CheckAuthorization("admin")
     public Share auditById(@PathVariable("id") Integer id,
                            @RequestBody ShareAuditDto auditDto){
-        // TODO 认证 授权
         return this.shareService.auditById(id,auditDto);
     }
 

@@ -11,13 +11,16 @@ import com.itmuch.contentcenter.feignclient.TestBaiduFeignClient;
 import com.itmuch.contentcenter.rocketmq.MySource;
 import com.itmuch.contentcenter.sentineltest.TestControllerBlockHandler;
 import com.itmuch.contentcenter.service.content.TestService;
-import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.stream.messaging.Source;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -89,7 +93,7 @@ public class TestController {
     public String testHot(@RequestParam(required = false) String a,
                           @RequestParam(required = false) String b) {
 
-        return a+  " " + b;
+        return a + " " + b;
     }
 
     // sentinel api  这种方式很不优雅 之后用注解的方式来解决
@@ -124,11 +128,11 @@ public class TestController {
 
     @GetMapping("/test-sentinel-wfw")
     @SentinelResource(value = "test-sentinel-resource",
-                        blockHandler = "blockFun",
-                        blockHandlerClass = TestControllerBlockHandler.class,
-                        fallback = "fallbackFun")
+            blockHandler = "blockFun",
+            blockHandlerClass = TestControllerBlockHandler.class,
+            fallback = "fallbackFun")
     public String testSentinelResource(@RequestParam(required = false) String a) {
-        if (StringUtils.isBlank(a)){
+        if (StringUtils.isBlank(a)) {
             throw new IllegalArgumentException("a not be blank");
         }
         return a;
@@ -143,13 +147,14 @@ public class TestController {
         log.warn(" 限流或者 降级  block",e);
         return "限流或者 降级  block";
     }*/
+
     /**
      * 处理降级 1.6之前
      * 一旦升级成 1.6 ，可以处理 throwable 所有的异常，开始可以针对所有类型的异常进行处理
      * 目前版本 1.5.2不支持把 fallback 独立出去
      * 1.6 可以
      */
-    public String fallbackFun(String a){
+    public String fallbackFun(String a) {
         return "降级  fallback";
     }
 
@@ -164,11 +169,44 @@ public class TestController {
                 "http://user-center/users/{userId}", UserDto.class, userId);
     }
 
+    //使用 restTemplate 传递 token
+    // 1. exchange
+    // 2. 用 拦截器 ClientHttpRequestInterceptor
+    @GetMapping("/tokenRelay/{userId}")
+    public ResponseEntity<UserDto> testExchange(@PathVariable("userId") Integer userId,
+                                                HttpServletRequest request
+    ) {
+        // 调用user-center服务的接口（此时user-center即为服务提供者）
+        String token = request.getHeader("X-Token");
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-Token", token);
+
+        return this.restTemplate.exchange(
+                "http://user-center/users/{userId}",
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                UserDto.class,
+                userId
+        );
+    }
+
+    //2. 上面的方法2
+    // 2. 用 拦截器 ClientHttpRequestInterceptor
+    @GetMapping("/testInterceptor/{userId}")
+    public UserDto testInterceptor(@PathVariable("userId") Integer userId) {
+        return restTemplate.getForObject(
+                "http://user-center/users/{userId}",
+                UserDto.class,
+                userId);
+    }
+
+
     //stream生产消息
     @Autowired
-    private  Source source;
+    private Source source;
+
     @GetMapping("test-stream")
-    public String testStream(){
+    public String testStream() {
         this.source.output().send(
                 MessageBuilder.withPayload(
                         "我是消息体"
@@ -179,8 +217,9 @@ public class TestController {
 
     @Autowired
     private MySource mySource;
+
     @GetMapping("test-stream2")
-    public String testStream2(){
+    public String testStream2() {
         this.mySource.output().send(
                 MessageBuilder.withPayload(
                         "消息体aaa"
@@ -188,8 +227,6 @@ public class TestController {
         );
         return "success";
     }
-
-
 
 
     public static void main(String[] args) throws InterruptedException {

@@ -1,5 +1,6 @@
 package com.itmuch.contentcenter.controller.content;
 
+import com.itmuch.contentcenter.auth.CheckLogin;
 import com.itmuch.contentcenter.domain.dto.content.ShareDto;
 import com.itmuch.contentcenter.domain.dto.user.UserDto;
 import com.itmuch.contentcenter.feignclient.UserCenterFeignClient;
@@ -16,15 +17,19 @@ public class ShareController {
     @Autowired
     private ShareService shareService;
 
-    @GetMapping ("/{id}")
-    public ShareDto findById(@PathVariable Integer id){
+    @GetMapping("/{id}")
+    @CheckLogin
+    public ShareDto findById(@PathVariable Integer id
+                             //@RequestHeader(value = "X-Token") String token
+    ) {
         return shareService.findById(id);
     }
 
     @Autowired
     UserCenterFeignClient userCenterFeignClient;
+
     @GetMapping("/testget")
-    public UserDto testGet(UserDto userDto){
+    public UserDto testGet(UserDto userDto) {
         UserDto test = userCenterFeignClient.findTest(userDto);
         return test;
     }
