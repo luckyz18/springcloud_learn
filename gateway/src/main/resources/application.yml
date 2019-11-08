@@ -11,8 +11,23 @@ spring:
     gateway:
       discovery:
         locator:
-          # ÈÃgateway Í¨¹ı·şÎñ·¢ÏÖ×é¼şÕÒµ½ÆäËûµÄÎ¢·şÎñ
           enabled: true
+#
+      routes:
+        - id: user_route
+          uri: lb://user-center
+          predicates:
+            - Path=/users/**
+        - id: content_route
+            uri: lb://content-center
+            predicates:
+              - Path=/shares/**,/admin/**
+#            #TimeBetween å¿…é¡»å’Œ TimeBetweenRoutePredicateFactory å‰ç¼€åç›¸åŒ
+#            # åªèƒ½åœ¨è¿™ä¸ªæ—¶é—´æ®µå†…è®¿é—®æ¥å£
+#            - TimeBetween=ä¸Šåˆ9:00,ä¸‹åˆ11:59
+#          filters:
+#            - PreLog=testName,testValue
+
 management:
   endpoints:
     web:
