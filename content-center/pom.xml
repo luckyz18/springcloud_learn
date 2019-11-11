@@ -123,6 +123,12 @@
             <scope>runtime</scope>
         </dependency>
 
+       <!-- 配置管理nacos-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-alibaba-nacos-config</artifactId>
+        </dependency>
+
     </dependencies>
     <dependencyManagement>
         <dependencies>

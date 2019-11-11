@@ -14,8 +14,10 @@ import com.itmuch.contentcenter.service.content.TestService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -33,6 +35,7 @@ import java.util.List;
 
 @RestController
 @Slf4j
+@RefreshScope
 //@RequiredArgsConstructor(onConstructor = @__(@Autowired))  //+final
 public class TestController {
     /* @Resource
@@ -226,6 +229,30 @@ public class TestController {
                 ).build()
         );
         return "success";
+    }
+
+    @Value("${your.configuration}")
+    private String  yourConfiguration;
+
+    @GetMapping("/getYourConfiguration")
+    public String getConfiguration(){
+        return yourConfiguration;
+    }
+
+    @Value("${common1.configuration1}")
+    private String common1Configuration;
+
+    @Value("${common2.configuration2}")
+    private String common2Configuration;
+
+    @GetMapping("/getCommonConfiguration1")
+    public String getCommonConfiguration1() {
+        return common1Configuration;
+    }
+
+    @GetMapping("/getCommonConfiguration2")
+    public String getCommonConfiguration2() {
+        return common2Configuration;
     }
 
 
