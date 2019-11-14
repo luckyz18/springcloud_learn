@@ -79,7 +79,7 @@ logging:
     com.itmuch.contentcenter.feignclient.UserCenterFeignClient: debug
     # 后台一直打印消息  把stream日志级别设置一下
     com.alibaba.nacos: error
-    com.itmuch.contentcenter.dao.content.ShareMapper: debug
+    com.itmuch.contentcenter.dao.content: debug
 
 #配置文件配置feign的日志级别- 局部配置
 feign:
@@ -132,6 +132,11 @@ management:
 #    # 小坑 不填就会报错 是个必填参数
 #    group: test-group
 
+# mybatis 映射时会有问题 时间显示不出来
+# 解决办法 1. 这样配置 把下划线变成驼峰命名的方式 2. resultMap 而不是 resultType
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
 
 
 

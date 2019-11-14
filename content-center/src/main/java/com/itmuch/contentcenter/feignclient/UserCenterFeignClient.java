@@ -1,12 +1,12 @@
 package com.itmuch.contentcenter.feignclient;
 
 import com.itmuch.contentcenter.configuration.UserCenterFeignConfiguration;
+import com.itmuch.contentcenter.domain.dto.user.UserAddBonusDto;
 import com.itmuch.contentcenter.domain.dto.user.UserDto;
+import org.apache.catalina.User;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.*;
 
 // name : 远程调用的 微服务名称
 //局部配置-java 代码配置
@@ -34,8 +34,10 @@ public interface UserCenterFeignClient {
     );
 
     @GetMapping("/users/q")
-    public UserDto findTest(@SpringQueryMap UserDto userDto);
+    UserDto findTest(@SpringQueryMap UserDto userDto);
 
+    @PostMapping("/users/add-bonus")
+    UserDto addBonus(@RequestBody UserAddBonusDto userAddBonusDto);
 
 
 }

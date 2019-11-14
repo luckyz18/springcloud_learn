@@ -3,16 +3,20 @@ package com.itmuch.contentcenter.service.content;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.itmuch.contentcenter.dao.content.MidUserShareMapper;
 import com.itmuch.contentcenter.dao.content.RocketmqTransactionLogMapper;
 import com.itmuch.contentcenter.dao.content.ShareMapper;
 import com.itmuch.contentcenter.domain.dto.content.ShareAuditDto;
 import com.itmuch.contentcenter.domain.dto.content.ShareDto;
 import com.itmuch.contentcenter.domain.dto.messages.UserAddBonusMsgDto;
+import com.itmuch.contentcenter.domain.dto.user.UserAddBonusDto;
 import com.itmuch.contentcenter.domain.dto.user.UserDto;
+import com.itmuch.contentcenter.domain.entity.content.MidUserShare;
 import com.itmuch.contentcenter.domain.entity.content.RocketmqTransactionLog;
 import com.itmuch.contentcenter.domain.entity.content.Share;
 import com.itmuch.contentcenter.domain.enums.AuditStatusEnum;
 import com.itmuch.contentcenter.feignclient.UserCenterFeignClient;
+import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.apache.rocketmq.spring.support.RocketMQHeaders;
@@ -23,9 +27,15 @@ import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -46,11 +56,14 @@ public class ShareService {
     @Autowired
     RocketMQTemplate rocketMQTemplate;
 
-    @Autowired
+    @Resource
     RocketmqTransactionLogMapper rocketmqTransactionLogMapper;
 
     @Autowired
     Source source;
+
+    @Autowired
+    private MidUserShareMapper midUserShareMapper;
 
 
     public ShareDto findById(Integer id) {
@@ -197,9 +210,75 @@ public class ShareService {
 
     }
 
-    public PageInfo<Share> q(Integer pageNo, Integer pageSize, String title) {
-        PageHelper.startPage(pageNo,pageSize); // 这条语句切入一个不含分页的查询 xml    我觉得这样写真的很麻烦。。不如直接sql ne
+    //列表分享页
+    public PageInfo<Share> q(Integer pageNo, Integer pageSize, String title, Integer userId) {
+        PageHelper.startPage(pageNo, pageSize); // 这条语句切入一个不含分页的查询 xml    我觉得这样写真的很麻烦。。不如直接sql ne
         List<Share> shares = shareMapper.selecByParam(title);
+        if (userId == null) {
+            for (Share share : shares) {
+                share.setDownloadUrl(null);
+            }
+        }else {
+            //查询该用户有没有购买该资源
+            for (Share share : shares) {
+                MidUserShare midUserShare = midUserShareMapper.selectOne(MidUserShare.builder()
+                        .userId(userId)
+                        .shareId(share.getId())
+                        .build()
+                );
+                if (midUserShare == null) {
+                    share.setDownloadUrl(null);
+                }
+            }
+        }
         return new PageInfo<>(shares);
+    }
+
+    /**
+     * 积分兑换指定分享
+     */
+    public Share exchangeById(Integer id) {
+        Share share = this.shareMapper.selectByPrimaryKey(id);
+        if (share == null) {
+            throw new IllegalArgumentException("兑换的分享不存在");
+        }
+        //login 后 从request 取 user_id 或者jia上 httpRequest
+        ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = servletRequestAttributes.getRequest();
+        Integer userId = (Integer) request.getAttribute("id");
+        Integer sharePrice = share.getPrice();
+
+        //兑换过就不再扣积分
+        MidUserShare userAndShare = this.midUserShareMapper.selectOne(MidUserShare.builder()
+                .userId(userId)
+                .shareId(share.getId())
+                .build()
+        );
+        if (userAndShare != null) {
+            return share;
+        }
+        //扣积分 兑换分享
+        UserDto userDto = userCenterFeignClient.findById(userId);
+        Integer bonus = userDto.getBonus();
+        if (sharePrice > bonus) {
+            throw new IllegalArgumentException("积分不够兑换该分享！");
+        }
+        UserDto userDto1 = userCenterFeignClient.addBonus(
+                UserAddBonusDto.builder()
+                        .uid(userId)
+                        .bonus(0 - sharePrice)
+                        .build()
+        );
+
+
+        //用户分享表插入数据
+        midUserShareMapper.insert(
+                MidUserShare.builder()
+                        .shareId(share.getId())
+                        .userId(userId)
+                        .build()
+        );
+
+        return share;
     }
 }
