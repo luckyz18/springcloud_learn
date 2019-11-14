@@ -31,15 +31,28 @@ spring:
   application:
     #服务名称尽量用 - ，不要用_ ,更不要用特殊字符
     name: user-center
+  zipkin:
+    base-url: http://127.0.0.1:9411/
+    # 关闭服务发现，否则Spring Cloud会把zipkin的url当做服务名称
+    discoveryClientEnabled: false
+#    sender:
+#      type: web  # 设置使用http的方式传输数据
+  sleuth:
+    sampler:
+      #抽样率  默认是 0.1，只有10% 的数据上报给zipkin server 以免影响应用性能
+      probability: 1.0
 
 # 先注释掉  用 stream
 #rocketmq:
 #  name-server: 127.0.0.1:9876
   #消费组的名称不在这里写
 
+
+
 logging:
   level:
     com.alibaba.nacos: error
+    org.springframework.cloud.sleuth: debug
 
 #jwt 加密配置 若默认配置不符合需求 可以在配置文件中进行自定义
 jwt:
@@ -47,5 +60,6 @@ jwt:
   secret: 5d1IB9SiWd5tjBx&EMi^031CtigL!6jJ
   # jwt有效期，单位秒
   expire-time-in-second: 1209600
+
 
 

@@ -33,16 +33,17 @@ public class UserService {
         // 为用户加积分
         User user = userMapper.selectByPrimaryKey(msgDto.getUid());
         Integer bonus = msgDto.getBonus();
+        Integer userId = user.getId();
         user.setBonus(user.getBonus() + bonus);
         userMapper.updateByPrimaryKeySelective(user);
 
         // 在日志表里添加一条消息
         bonusEventLogMapper.insert(BonusEventLog.builder()
-                .userId(user.getId())
+                .userId(userId)
                 .value(bonus)
                 .createTime(new Date())
-                .description("添加积分" + bonus)
-                .event("发布了一个资源")
+                .description(msgDto.getDescription())
+                .event(msgDto.getEvent())
                 .build()
         );
         log.info("积分添加完毕...");
