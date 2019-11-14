@@ -231,7 +231,7 @@ public class TestController {
         return "success";
     }
 
-    @Value("${your.configuration}")
+    /*@Value("${your.configuration}")
     private String  yourConfiguration;
 
     @GetMapping("/getYourConfiguration")
@@ -253,7 +253,7 @@ public class TestController {
     @GetMapping("/getCommonConfiguration2")
     public String getCommonConfiguration2() {
         return common2Configuration;
-    }
+    }*/
 
 
     public static void main(String[] args) throws InterruptedException {

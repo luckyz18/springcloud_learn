@@ -49,6 +49,13 @@ spring:
 #        my-output:
 #          destination: stream-my-topic
 
+  sleuth:
+    sampler:
+      probability: 1.0
+  zipkin:
+    base-url: http://127.0.0.1:9411/
+    discoveryClientEnabled: false
+
 
 
 #  application:
@@ -72,6 +79,7 @@ logging:
     com.itmuch.contentcenter.feignclient.UserCenterFeignClient: debug
     # 后台一直打印消息  把stream日志级别设置一下
     com.alibaba.nacos: error
+    com.itmuch.contentcenter.dao.content.ShareMapper: debug
 
 #配置文件配置feign的日志级别- 局部配置
 feign:

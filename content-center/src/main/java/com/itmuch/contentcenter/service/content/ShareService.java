@@ -1,6 +1,8 @@
 package com.itmuch.contentcenter.service.content;
 
 import com.alibaba.fastjson.JSON;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.itmuch.contentcenter.dao.content.RocketmqTransactionLogMapper;
 import com.itmuch.contentcenter.dao.content.ShareMapper;
 import com.itmuch.contentcenter.domain.dto.content.ShareAuditDto;
@@ -24,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -194,4 +197,9 @@ public class ShareService {
 
     }
 
+    public PageInfo<Share> q(Integer pageNo, Integer pageSize, String title) {
+        PageHelper.startPage(pageNo,pageSize); // 这条语句切入一个不含分页的查询 xml    我觉得这样写真的很麻烦。。不如直接sql ne
+        List<Share> shares = shareMapper.selecByParam(title);
+        return new PageInfo<>(shares);
+    }
 }

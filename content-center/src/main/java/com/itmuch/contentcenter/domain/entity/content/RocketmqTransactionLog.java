@@ -6,13 +6,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @ToString
-@Builder
 @Table(name = "rocketmq_transaction_log")
+@Builder
 public class RocketmqTransactionLog {
     /**
      * id
