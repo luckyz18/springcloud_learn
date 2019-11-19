@@ -255,6 +255,12 @@ public class TestController {
         return common2Configuration;
     }*/
 
+    // spring cloud  去调用异构的 nodejs 微服务
+    @GetMapping("/test-node-service")
+    public String testNodeService() {
+        return this.restTemplate.getForObject("http://wii", String.class);
+    }
+
 
     public static void main(String[] args) throws InterruptedException {
         RestTemplate restTemplate = new RestTemplate();

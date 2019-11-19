@@ -15,7 +15,8 @@ public interface ShareMapper extends Mapper<Share> {
     //@SelectProvider(type = ShareProvider.class,method = "selecByParam")
 
     List<Share> selecByParam(@Param("title") String title);
-    
-    
-    
+
+
+    @SelectProvider(type = ShareProvider.class,method = "selectByShareIds")
+    List<Share> selectByShareIds(@Param("shareString") String shareString);
 }

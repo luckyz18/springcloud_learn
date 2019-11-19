@@ -8,6 +8,7 @@ import com.itmuch.contentcenter.dao.content.RocketmqTransactionLogMapper;
 import com.itmuch.contentcenter.dao.content.ShareMapper;
 import com.itmuch.contentcenter.domain.dto.content.ShareAuditDto;
 import com.itmuch.contentcenter.domain.dto.content.ShareDto;
+import com.itmuch.contentcenter.domain.dto.content.ShareRequestDTO;
 import com.itmuch.contentcenter.domain.dto.messages.UserAddBonusMsgDto;
 import com.itmuch.contentcenter.domain.dto.user.UserAddBonusDto;
 import com.itmuch.contentcenter.domain.dto.user.UserDto;
@@ -16,7 +17,6 @@ import com.itmuch.contentcenter.domain.entity.content.RocketmqTransactionLog;
 import com.itmuch.contentcenter.domain.entity.content.Share;
 import com.itmuch.contentcenter.domain.enums.AuditStatusEnum;
 import com.itmuch.contentcenter.feignclient.UserCenterFeignClient;
-import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.apache.rocketmq.spring.support.RocketMQHeaders;
@@ -27,18 +27,13 @@ import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -62,7 +57,7 @@ public class ShareService {
     @Autowired
     Source source;
 
-    @Autowired
+    @Resource
     private MidUserShareMapper midUserShareMapper;
 
 
@@ -102,7 +97,9 @@ public class ShareService {
         return shareDto;
     }
 
-    /*管理员审核*/
+    /**
+     * 管理员审核
+     */
     //用 rmq 的 分布式事务去实现  -- 是用spring 的消息编程模型实现分布式事务
     public Share auditById(Integer id, ShareAuditDto auditDto) {
         //1. 查看该分享是否存在 && 状态是否是待审核状态
@@ -181,7 +178,9 @@ public class ShareService {
         return share;
     }
 
-    //审核资源
+    /**
+     * 审核资源
+     */
     @Transactional(rollbackFor = Exception.class)
     public void auditByIdInDB(int shareId, ShareAuditDto auditDto) {
         //Share share = shareMapper.selectByPrimaryKey(shareId);
@@ -192,10 +191,11 @@ public class ShareService {
                 .reson(auditDto.getReson())
                 .build();
         //注意这里只能 updateByPrimaryKeySelective  而不是updateByprimarykey
+        //updateByPrimaryKeySelective会对字段进行判断再更新(如果为Null就忽略更新)，如果你只想更新某一字段，可以用这个方法。
+        //updateByPrimaryKey对你注入的字段全部更新
         this.shareMapper.updateByPrimaryKeySelective(share);
 
         // 把share写到缓存
-
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -218,7 +218,7 @@ public class ShareService {
             for (Share share : shares) {
                 share.setDownloadUrl(null);
             }
-        }else {
+        } else {
             //查询该用户有没有购买该资源
             for (Share share : shares) {
                 MidUserShare midUserShare = midUserShareMapper.selectOne(MidUserShare.builder()
@@ -270,7 +270,6 @@ public class ShareService {
                         .build()
         );
 
-
         //用户分享表插入数据
         midUserShareMapper.insert(
                 MidUserShare.builder()
@@ -280,5 +279,87 @@ public class ShareService {
         );
 
         return share;
+    }
+
+    /**
+     * 投稿
+     *
+     * @param shareRequestDTO
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public Share addContribute(ShareRequestDTO shareRequestDTO, Integer uid) {
+        Share share = Share.builder()
+                .userId(uid)
+                .title(shareRequestDTO.getTitle())
+                .createTime(new Date())
+                .updateTime(new Date())
+                .isOriginal(shareRequestDTO.isOriginal())
+                .author(shareRequestDTO.getAuthor())
+                .summary(shareRequestDTO.getSummary())
+                .price(shareRequestDTO.getPrice())
+                .downloadUrl(shareRequestDTO.getDownloadUrl())
+                .auditStatus("NOT_YET")
+                .cover("pp")
+                .showFlag(0)
+                .buyCount(0)
+                .build();
+        this.shareMapper.insert(share);
+        return share;
+    }
+
+    public List<Share> getContributesByUid(Integer uid) {
+        List<Share> shares = this.shareMapper.select(Share.builder()
+                .userId(uid)
+                .build());
+        return shares;
+    }
+
+    /**
+     * 编辑投稿
+     *
+     * @param id
+     * @param shareRequestDTO
+     * @return
+     */
+    public ShareDto updateContributeById(Integer id, ShareRequestDTO shareRequestDTO) {
+        Share shareDto = Share.builder()
+                .id(id)
+                .author(shareRequestDTO.getAuthor())
+                .updateTime(new Date())
+                .downloadUrl(shareRequestDTO.getDownloadUrl())
+                .isOriginal(shareRequestDTO.isOriginal())
+                .price(shareRequestDTO.getPrice())
+                .summary(shareRequestDTO.getSummary())
+                .title(shareRequestDTO.getTitle())
+                .build();
+        this.shareMapper.updateByPrimaryKeySelective(shareDto);
+        return this.findById(id);
+    }
+
+    /**
+     * 获取用户拥有的列表
+     * @param userId
+     * @return
+     */
+    public List<Share> getMyShares(Integer userId) {
+        List<Share> shares = new LinkedList<>();
+        StringBuffer sb = new StringBuffer();
+        sb.append("(");
+        //去用户分享表获取用户下的的所有share_id
+        List<MidUserShare> midUserShares = midUserShareMapper.select(
+                MidUserShare.builder()
+                        .userId(userId)
+                        .build()
+        );
+        // 用share id 获取所有的share
+        for (MidUserShare midUserShare : midUserShares) {
+            Integer shareId = midUserShare.getShareId();
+            sb.append(shareId + ",");
+        }
+        String shareString = sb.substring(0, sb.lastIndexOf(","));
+        shareString += ")";
+        shares = this.shareMapper.selectByShareIds(shareString);
+        return shares;
     }
 }

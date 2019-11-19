@@ -1,20 +1,19 @@
 package com.itmuch.contentcenter.provider;
 
-import org.springframework.web.bind.annotation.RequestParam;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
 
+@Slf4j
 public class ShareProvider {
-    public String selecByParam(@RequestParam Integer pageNo,
-                               @RequestParam Integer pageSize,
-                               @RequestParam String title) {
-        StringBuffer sql = new StringBuffer("");
-        sql.append(" select * from share where 1=1  ");
-        if (title != null && !"".equals(title)) {
-            sql.append(" and title like '%" + title + "%' ");
+
+    public String selectByShareIds(@Param("shareString") String shareString){
+        StringBuffer sb = new StringBuffer();
+        sb.append("select * from share where 1=1 ");
+        if (shareString != null && !"".equals(shareString)){
+            sb.append(" and id in " + shareString);
         }
-        sql.append(" and audit_status = 'PASS' ");
-        int start = (pageNo - 1) * pageSize;
-        sql.append(" limit "+start+","+pageSize);
-        System.out.println("|| " + sql.toString());
-        return sql.toString();
+        log.info("||||sql " + sb.toString());
+        return sb.toString();
     }
+
 }

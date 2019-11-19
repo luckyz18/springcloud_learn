@@ -13,11 +13,11 @@ spring:
         # 指定命名空间
 #        namespace: 74f2efa5-1e9e-4046-b77d-77b5c8a17356
         # 指定集群名称
-        cluster-name: BJ
+#        cluster-name: BJ
         #元数据  控制微服务的版本
-        metadata:
-          version: v1
-          target-version: v1
+#        metadata:
+#          version: v1
+#          target-version: v1
     #为内容中心添加sentinel控制台
 
     sentinel:
