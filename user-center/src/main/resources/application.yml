@@ -61,5 +61,7 @@ jwt:
   # jwt有效期，单位秒
   expire-time-in-second: 1209600
 
-
-
+# 自动转换为驼峰命名
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true

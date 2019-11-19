@@ -1,17 +1,25 @@
 package com.itmuch.usercenter.service.user;
 
+import com.itmuch.usercenter.auth.CheckLogin;
 import com.itmuch.usercenter.dao.user.BonusEventLogMapper;
 import com.itmuch.usercenter.dao.user.UserMapper;
 import com.itmuch.usercenter.domain.dto.messages.UserAddBonusMsgDto;
+import com.itmuch.usercenter.domain.dto.share.ShareDto;
 import com.itmuch.usercenter.domain.dto.user.UserLoginDTO;
 import com.itmuch.usercenter.domain.entity.user.BonusEventLog;
 import com.itmuch.usercenter.domain.entity.user.User;
+import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -76,5 +84,14 @@ public class UserService {
             return userToSave;
         }
         return user;
+    }
+
+    /**
+     * 是否签到
+     * @param userId
+     * @return
+     */
+    public BonusEventLog getUserIfSign(Integer userId) {
+        return this.bonusEventLogMapper.selectByUserIdIfSign(userId);
     }
 }

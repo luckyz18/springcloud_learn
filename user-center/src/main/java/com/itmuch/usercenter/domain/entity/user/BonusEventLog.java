@@ -1,14 +1,18 @@
 package com.itmuch.usercenter.domain.entity.user;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 import javax.persistence.*;
-@Getter
-@Setter
-@ToString
-@Builder
+
 @Table(name = "bonus_event_log")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class BonusEventLog {
     /**
      * ID
