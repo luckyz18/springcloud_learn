@@ -16,4 +16,5 @@
     <select id="selectBonusEventLog" resultType="com.itmuch.usercenter.domain.entity.user.BonusEventLog">
         select  * from bonus_event_log order by create_time desc
     </select>
+
 </mapper>
